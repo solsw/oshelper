@@ -1,2 +1,2 @@
-// Package oshelper contains SyncFileWriter and 'os' package helpers.
+// Package oshelper contains [os] package helpers.
 package oshelper

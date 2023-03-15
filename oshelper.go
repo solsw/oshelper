@@ -39,7 +39,7 @@ func FileExists(filename string) (bool, error) {
 	return FileExistsFunc(filename, nil)
 }
 
-// FileExistsMust is like FileExists but returns 'false' in case of error.
+// FileExistsMust is like [FileExists] but returns 'false' in case of error.
 func FileExistsMust(filename string) bool {
 	fe, err := FileExists(filename)
 	if err != nil {
@@ -78,7 +78,7 @@ func DirExists(dirname string) (bool, error) {
 	return DirExistsFunc(dirname, nil)
 }
 
-// DirExistsMust is like DirExists but returns 'false' in case of error.
+// DirExistsMust is like [DirExists] but returns 'false' in case of error.
 func DirExistsMust(dirname string) bool {
 	de, err := DirExists(dirname)
 	if err != nil {
@@ -88,7 +88,7 @@ func DirExistsMust(dirname string) bool {
 }
 
 // TempFileBase returns just a name of a temporary file.
-// (See os.CreateTemp for 'pattern' usage.)
+// (See [os.CreateTemp] for 'pattern' usage.)
 func TempFileBase(pattern string) (string, error) {
 	f, err := os.CreateTemp("", pattern)
 	if err != nil {
@@ -141,15 +141,17 @@ func ReadFileStrings(filename string) ([]string, error) {
 }
 
 // WriteFileStringsNewLine writes 'ss' to the named file.
+//
 // Each string (including the last one) is followed by 'newLine'.
-// (See os.WriteFile for details.)
+// (See [os.WriteFile] for 'perm' usage.)
 func WriteFileStringsNewLine(filename string, ss []string, perm os.FileMode, newLine string) error {
 	return os.WriteFile(filename, []byte(strings.Join(ss, newLine)+newLine), perm)
 }
 
 // WriteFileStrings writes 'ss' to the named file.
+//
 // Each string (including the last one) is followed by oshelper.NewLine.
-// (See os.WriteFile for details.)
+// (See [os.WriteFile] for 'perm' usage.)
 func WriteFileStrings(filename string, ss []string, perm os.FileMode) error {
 	return WriteFileStringsNewLine(filename, ss, perm, NewLine)
 }
