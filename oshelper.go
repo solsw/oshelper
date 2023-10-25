@@ -10,9 +10,8 @@ import (
 )
 
 // FileExistsFunc reports whether a regular file 'filename' exists.
-//
 // 'f' (if not nil) is used to process 'filename' before own error returning
-// (e.g. 'f' may extract just file name from full path).
+// (e.g. 'f' may extract just file name from the full path).
 func FileExistsFunc(filename string, f func(string) string) (bool, error) {
 	if filename == "" {
 		return false, errors.New("empty filename")
@@ -39,17 +38,7 @@ func FileExists(filename string) (bool, error) {
 	return FileExistsFunc(filename, nil)
 }
 
-// FileExistsMust is like [FileExists] but returns 'false' in case of error.
-func FileExistsMust(filename string) bool {
-	fe, err := FileExists(filename)
-	if err != nil {
-		return false
-	}
-	return fe
-}
-
 // DirExistsFunc reports whether a directory 'dirname' exists.
-//
 // 'f' (if not nil) is used to process 'dirname' before own error returning
 // (e.g. 'f' may shorten excessively long 'dirname').
 func DirExistsFunc(dirname string, f func(string) string) (bool, error) {
@@ -76,15 +65,6 @@ func DirExistsFunc(dirname string, f func(string) string) (bool, error) {
 // DirExists reports whether a directory 'dirname' exists.
 func DirExists(dirname string) (bool, error) {
 	return DirExistsFunc(dirname, nil)
-}
-
-// DirExistsMust is like [DirExists] but returns 'false' in case of error.
-func DirExistsMust(dirname string) bool {
-	de, err := DirExists(dirname)
-	if err != nil {
-		return false
-	}
-	return de
 }
 
 // TempFileBase returns just a name of a temporary file.
@@ -116,7 +96,7 @@ func ExeDir() (string, error) {
 }
 
 // GetenvDef retrieves the value of the environment variable named by the 'key'.
-// If the value is empty or the variable is not present 'def' is returned.
+// If the value is empty or the variable is not present, 'def' is returned.
 func GetenvDef(key, def string) string {
 	r := os.Getenv(key)
 	if r == "" {
@@ -141,7 +121,6 @@ func ReadFileStrings(filename string) ([]string, error) {
 }
 
 // WriteFileStringsNewLine writes 'ss' to the named file.
-//
 // Each string (including the last one) is followed by 'newLine'.
 // (See [os.WriteFile] for 'perm' usage.)
 func WriteFileStringsNewLine(filename string, ss []string, perm os.FileMode, newLine string) error {
@@ -149,8 +128,7 @@ func WriteFileStringsNewLine(filename string, ss []string, perm os.FileMode, new
 }
 
 // WriteFileStrings writes 'ss' to the named file.
-//
-// Each string (including the last one) is followed by oshelper.NewLine.
+// Each string (including the last one) is followed by [NewLine].
 // (See [os.WriteFile] for 'perm' usage.)
 func WriteFileStrings(filename string, ss []string, perm os.FileMode) error {
 	return WriteFileStringsNewLine(filename, ss, perm, NewLine)

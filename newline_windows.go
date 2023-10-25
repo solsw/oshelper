@@ -2,5 +2,5 @@
 
 package oshelper
 
-// NewLine string defined for this environment.
+// NewLine string under Windows environment.
 const NewLine = "\r\n"

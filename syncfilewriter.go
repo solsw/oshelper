@@ -4,7 +4,7 @@ import (
 	"os"
 )
 
-// SyncFileWriter is the [os.File]-based [io.Writer] implementation,
+// SyncFileWriter is the [os.File]-based [io.Writer] implementation
 // that calls [os.File.Sync] on the underlying file after each [os.File.Write] call.
 type SyncFileWriter struct {
 	file *os.File
