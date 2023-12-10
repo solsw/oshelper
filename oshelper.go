@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"errors"
 	"fmt"
+	"io/fs"
 	"os"
 	"path/filepath"
 	"strings"
@@ -132,4 +133,21 @@ func WriteFileStringsNewLine(filename string, ss []string, perm os.FileMode, new
 // (See [os.WriteFile] for 'perm' usage.)
 func WriteFileStrings(filename string, ss []string, perm os.FileMode) error {
 	return WriteFileStringsNewLine(filename, ss, perm, NewLine)
+}
+
+// ErrStdinNotRedirected is returned by StdinIsRedirected when [stdin] is not redirected.
+//
+// [stdin]: https://pkg.go.dev/os#File.Stdin
+var ErrStdinNotRedirected = errors.New("standard input must be redirected: file (<) or pipe (|)")
+
+// StdinIsRedirected returns nil if [stdin] is redirected. Otherwise, returns [ErrStdinNotRedirected].
+//
+// [stdin]: https://pkg.go.dev/os#File.Stdin
+func StdinIsRedirected() error {
+	finfo, _ := os.Stdin.Stat()
+	fmode := finfo.Mode()
+	if !(fmode.IsRegular() || (fmode&fs.ModeNamedPipe != 0)) {
+		return ErrStdinNotRedirected
+	}
+	return nil
 }
