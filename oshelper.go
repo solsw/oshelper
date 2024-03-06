@@ -135,15 +135,15 @@ func WriteFileStrings(filename string, ss []string, perm os.FileMode) error {
 	return WriteFileStringsNewLine(filename, ss, perm, NewLine)
 }
 
-// ErrStdinNotRedirected is returned by StdinIsRedirected when [stdin] is not redirected.
+// ErrStdinNotRedirected is returned by StdinRedirected when [stdin] is not redirected.
 //
-// [stdin]: https://pkg.go.dev/os#File.Stdin
+// [stdin]: https://pkg.go.dev/os#pkg-variables
 var ErrStdinNotRedirected = errors.New("standard input must be redirected: file (<) or pipe (|)")
 
-// StdinIsRedirected returns nil if [stdin] is redirected. Otherwise, returns [ErrStdinNotRedirected].
+// StdinRedirected returns nil if [stdin] is redirected. Otherwise, returns [ErrStdinNotRedirected].
 //
-// [stdin]: https://pkg.go.dev/os#File.Stdin
-func StdinIsRedirected() error {
+// [stdin]: https://pkg.go.dev/os#pkg-variables
+func StdinRedirected() error {
 	finfo, _ := os.Stdin.Stat()
 	fmode := finfo.Mode()
 	if !(fmode.IsRegular() || (fmode&fs.ModeNamedPipe != 0)) {

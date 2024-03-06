@@ -79,7 +79,7 @@ func TestGetenvDef(t *testing.T) {
 	}
 }
 
-func TestStdinIsRedirected(t *testing.T) {
+func TestStdinRedirected(t *testing.T) {
 	tests := []struct {
 		name    string
 		wantErr bool
@@ -88,8 +88,8 @@ func TestStdinIsRedirected(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if err := StdinIsRedirected(); (err != nil) != tt.wantErr {
-				t.Errorf("StdinIsRedirected() error = %v, wantErr %v", err, tt.wantErr)
+			if err := StdinRedirected(); (err != nil) != tt.wantErr {
+				t.Errorf("StdinRedirected() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
 	}
