@@ -96,16 +96,6 @@ func ExeDir() (string, error) {
 	return exeDir, nil
 }
 
-// GetenvDef retrieves the value of the environment variable named by the 'key'.
-// If the value is empty or the variable is not present, 'def' is returned.
-func GetenvDef(key, def string) string {
-	r := os.Getenv(key)
-	if r == "" {
-		return def
-	}
-	return r
-}
-
 // ReadFileStrings returns the contents of the file 'filename' as []string.
 func ReadFileStrings(filename string) ([]string, error) {
 	f, err := os.Open(filename)
