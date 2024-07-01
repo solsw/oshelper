@@ -15,6 +15,11 @@ func NewSyncFileWriter(f *os.File) *SyncFileWriter {
 	return &SyncFileWriter{file: f}
 }
 
+// File returns the underlying file of the [SyncFileWriter].
+func (sfw *SyncFileWriter) File() *os.File {
+	return sfw.file
+}
+
 // Write implements the [io.Writer] interface.
 func (sfw *SyncFileWriter) Write(p []byte) (n int, err error) {
 	n, err = sfw.file.Write(p)
