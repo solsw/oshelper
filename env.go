@@ -6,7 +6,7 @@ import (
 )
 
 // GetenvDef retrieves the value of the environment variable named by the 'key'.
-// If the value is empty or the variable is not present, 'def' is returned.
+// If the variable is not present or the value is empty, 'def' is returned.
 func GetenvDef(key, def string) string {
 	env := os.Getenv(key)
 	if env == "" {
@@ -15,9 +15,9 @@ func GetenvDef(key, def string) string {
 	return env
 }
 
-// MustEnv retrieves the value of the environment variable named by the 'key'.
-// If the variable is not present in the environment or the value is empty, an error is returned.
-func MustEnv(key string) (string, error) {
+// GetenvErr retrieves the value of the environment variable named by the 'key'.
+// If the variable is not present or the value is empty, an error is returned.
+func GetenvErr(key string) (string, error) {
 	env, exist := os.LookupEnv(key)
 	if !exist {
 		return "", fmt.Errorf("no environment variable '%s'", key)

@@ -1,6 +1,8 @@
 package oshelper
 
-import "testing"
+import (
+	"testing"
+)
 
 func TestGetenvDef(t *testing.T) {
 	type args struct {
@@ -29,7 +31,7 @@ func TestGetenvDef(t *testing.T) {
 	}
 }
 
-func TestMustEnv(t *testing.T) {
+func TestGetenvErr(t *testing.T) {
 	type args struct {
 		key string
 	}
@@ -54,9 +56,9 @@ func TestMustEnv(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			_, err := MustEnv(tt.args.key)
+			_, err := GetenvErr(tt.args.key)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("MustEnv() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("GetenvErr() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 		})
