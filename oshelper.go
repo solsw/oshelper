@@ -96,7 +96,7 @@ func ExeDir() (string, error) {
 	return exeDir, nil
 }
 
-// ReadFileStrings returns the contents of the file 'filename' as []string.
+// ReadFileStrings returns contents of the file 'filename' as []string.
 func ReadFileStrings(filename string) ([]string, error) {
 	f, err := os.Open(filename)
 	if err != nil {
