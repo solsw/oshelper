@@ -2,6 +2,7 @@ package oshelper
 
 import (
 	"os"
+	"path/filepath"
 	"testing"
 )
 
@@ -63,6 +64,34 @@ func TestStdinRedirected(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			if err := StdinRedirected(); (err != nil) != tt.wantErr {
 				t.Errorf("StdinRedirected() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
+}
+
+func TestClearDir(t *testing.T) {
+	const dir1 = "dir1"
+	const dir2 = "dir2"
+	_ = os.Mkdir(dir1, os.ModePerm)
+	defer os.Remove(dir1)
+	_ = os.WriteFile(filepath.Join(dir1, "file1"), []byte("qwerty"), os.ModePerm)
+	_ = os.Mkdir(filepath.Join(dir1, dir2), os.ModePerm)
+	_ = os.WriteFile(filepath.Join(dir1, dir2, "file2"), []byte("qwerty"), os.ModePerm)
+
+	type args struct {
+		dirname string
+	}
+	tests := []struct {
+		name    string
+		args    args
+		wantErr bool
+	}{
+		{name: "1", args: args{dirname: dir1}, wantErr: false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if err := ClearDir(tt.args.dirname); (err != nil) != tt.wantErr {
+				t.Errorf("ClearDir() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
 	}

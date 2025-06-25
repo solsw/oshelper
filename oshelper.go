@@ -68,6 +68,20 @@ func DirExists(dirname string) (bool, error) {
 	return DirExistsFunc(dirname, nil)
 }
 
+// ClearDir clears the contents of the directory 'dirname'.
+func ClearDir(dirname string) error {
+	des, err := os.ReadDir(dirname)
+	if err != nil {
+		return err
+	}
+	for _, de := range des {
+		if err := os.RemoveAll(filepath.Join(dirname, de.Name())); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 // TempFileBase returns just a name of a temporary file.
 // (See [os.CreateTemp] for 'pattern' usage.)
 func TempFileBase(pattern string) (string, error) {
