@@ -3,9 +3,10 @@ package oshelper
 import (
 	"errors"
 	"fmt"
-	"math/rand/v2"
 	"os"
 	"path/filepath"
+
+	"github.com/solsw/mathrandhelper"
 )
 
 // FileExistsFunc reports whether a regular file 'filename' exists.
@@ -80,8 +81,8 @@ func ClearDir(dirname string) error {
 	return nil
 }
 
-// WipeFile wipes the contents of the file 'filename'.
-func WipeFile(filename string) error {
+// RandomOverFile overwrites the contents of file 'filename' with random data.
+func RandomOverFile(filename string) error {
 	f, err := os.OpenFile(filename, os.O_WRONLY, os.ModePerm)
 	if err != nil {
 		return err
@@ -96,19 +97,24 @@ func WipeFile(filename string) error {
 	remainder := fi.Size() % N
 	bb := make([]byte, N)
 	for range quotient {
-		for i := 0; i < len(bb); i++ {
-			bb[i] = rand.N(byte(255))
-		}
+		mathrandhelper.RandomBytes(bb)
 		if _, err := f.Write(bb); err != nil {
 			return err
 		}
 	}
 	bb = make([]byte, remainder)
-	for i := 0; i < len(bb); i++ {
-		bb[i] = rand.N(byte(255))
-	}
+	mathrandhelper.RandomBytes(bb)
 	if _, err := f.Write(bb); err != nil {
 		return err
 	}
 	return f.Sync()
+}
+
+// WipeFile first overwrites the contents of file 'filename' with random data,
+// then removes the file.
+func WipeFile(filename string) error {
+	if err := RandomOverFile(filename); err != nil {
+		return err
+	}
+	return os.Remove(filename)
 }

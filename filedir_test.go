@@ -81,7 +81,7 @@ func TestClearDir(t *testing.T) {
 	}
 }
 
-func TestWipeFile(t *testing.T) {
+func TestRandomOverFile(t *testing.T) {
 	testFilename, _ := TempFileBase("")
 	testFilename = filepath.Join(t.TempDir(), testFilename)
 	type args struct {
@@ -108,8 +108,8 @@ func TestWipeFile(t *testing.T) {
 			if tt.name == "2" {
 				_ = os.WriteFile(testFilename, []byte("12345678\nqwertyui\nasdfghjk\nzxcvbnm,"), os.ModePerm)
 			}
-			if err := WipeFile(tt.args.filename); (err != nil) != tt.wantErr {
-				t.Errorf("WipeFile() error = %v, wantErr %v", err, tt.wantErr)
+			if err := RandomOverFile(tt.args.filename); (err != nil) != tt.wantErr {
+				t.Errorf("RandomOverFile() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
 	}
