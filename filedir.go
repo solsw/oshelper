@@ -97,13 +97,13 @@ func RandomOverFile(filename string) error {
 	remainder := fi.Size() % N
 	bb := make([]byte, N)
 	for range quotient {
-		mathrandhelper.RandomBytes(bb)
+		mathrandhelper.RandomBuf(bb)
 		if _, err := f.Write(bb); err != nil {
 			return err
 		}
 	}
 	bb = make([]byte, remainder)
-	mathrandhelper.RandomBytes(bb)
+	mathrandhelper.RandomBuf(bb)
 	if _, err := f.Write(bb); err != nil {
 		return err
 	}
