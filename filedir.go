@@ -94,18 +94,22 @@ func RandomOverFile(filename string) error {
 	}
 	const N int64 = 1024 * 1024
 	quotient := fi.Size() / N
+	if quotient > 0 {
+		bb := make([]byte, N)
+		for range quotient {
+			mathrandhelper.RandomBuf(bb)
+			if _, err := f.Write(bb); err != nil {
+				return err
+			}
+		}
+	}
 	remainder := fi.Size() % N
-	bb := make([]byte, N)
-	for range quotient {
+	if remainder > 0 {
+		bb := make([]byte, remainder)
 		mathrandhelper.RandomBuf(bb)
 		if _, err := f.Write(bb); err != nil {
 			return err
 		}
-	}
-	bb = make([]byte, remainder)
-	mathrandhelper.RandomBuf(bb)
-	if _, err := f.Write(bb); err != nil {
-		return err
 	}
 	return f.Sync()
 }
