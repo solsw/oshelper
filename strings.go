@@ -23,6 +23,7 @@ func ReadFileStrings(filename string) ([]string, error) {
 
 // WriteFileStringsNewLine writes 'ss' to the named file.
 // Each string (including the last one) is followed by 'newLine'.
+// If 'ss' is empty, only 'newLine' is written to the file.
 // (See [os.WriteFile] for 'perm' usage.)
 func WriteFileStringsNewLine(filename string, ss []string, perm os.FileMode, newLine string) error {
 	return os.WriteFile(filename, []byte(strings.Join(ss, newLine)+newLine), perm)

@@ -53,6 +53,63 @@ func TestFileExists(t *testing.T) {
 	}
 }
 
+func TestDirExists(t *testing.T) {
+	td := t.TempDir()
+	f, _ := os.CreateTemp("", "")
+	f.Close()
+	defer os.Remove(f.Name())
+	tests := []struct {
+		name    string
+		dirname string
+		want    bool
+		wantErr bool
+	}{
+		{name: "empty", dirname: "", want: false, wantErr: true},
+		{name: "nonexistent", dirname: "C3043E18D2234F2897BE0BCEBBE0C840", want: false},
+		{name: "existing", dirname: td, want: true},
+		{name: "file", dirname: f.Name(), want: false, wantErr: true},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := DirExists(tt.dirname)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("DirExists() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if got != tt.want {
+				t.Errorf("DirExists() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestWipeFile(t *testing.T) {
+	td := t.TempDir()
+	filename := filepath.Join(td, "wipe.txt")
+	_ = os.WriteFile(filename, []byte("secret data"), os.ModePerm)
+	tests := []struct {
+		name     string
+		filename string
+		wantErr  bool
+	}{
+		{name: "nonexistent", filename: filepath.Join(td, "missing.txt"), wantErr: true},
+		{name: "existing", filename: filename},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if err := WipeFile(tt.filename); (err != nil) != tt.wantErr {
+				t.Errorf("WipeFile() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !tt.wantErr {
+				if _, err := os.Stat(tt.filename); !os.IsNotExist(err) {
+					t.Errorf("WipeFile() file still exists: %s", tt.filename)
+				}
+			}
+		})
+	}
+}
+
 func TestClearDir(t *testing.T) {
 	const dir1 = "dir1"
 	const dir2 = "dir2"

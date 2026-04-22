@@ -18,8 +18,9 @@ func TestFreadln(t *testing.T) {
 		wantErr bool
 	}{
 		{name: "empty",
-			args: args{r: bufio.NewReader(strings.NewReader(""))},
-			want: "",
+			args:    args{r: bufio.NewReader(strings.NewReader(""))},
+			want:    "",
+			wantErr: true,
 		},
 		{name: "empty\r\n",
 			args: args{r: bufio.NewReader(strings.NewReader("\r\n"))},

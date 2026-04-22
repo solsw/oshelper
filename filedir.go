@@ -1,12 +1,12 @@
 package oshelper
 
 import (
+	cryptorand "crypto/rand"
 	"errors"
 	"fmt"
+	"io/fs"
 	"os"
 	"path/filepath"
-
-	"github.com/solsw/mathrandhelper"
 )
 
 // FileExistsFunc reports whether a regular file 'filename' exists.
@@ -18,7 +18,7 @@ func FileExistsFunc(filename string, f func(string) string) (bool, error) {
 	}
 	fi, err := os.Stat(filename)
 	if err != nil {
-		if os.IsNotExist(err) {
+		if errors.Is(err, fs.ErrNotExist) {
 			return false, nil
 		}
 		return false, err
@@ -47,7 +47,7 @@ func DirExistsFunc(dirname string, f func(string) string) (bool, error) {
 	}
 	fi, err := os.Stat(dirname)
 	if err != nil {
-		if os.IsNotExist(err) {
+		if errors.Is(err, fs.ErrNotExist) {
 			return false, nil
 		}
 		return false, err
@@ -97,7 +97,7 @@ func RandomOverFile(filename string) error {
 	if quotient > 0 {
 		bb := make([]byte, N)
 		for range quotient {
-			mathrandhelper.RandomBuf(bb)
+			_, _ = cryptorand.Read(bb)
 			if _, err := f.Write(bb); err != nil {
 				return err
 			}
@@ -106,7 +106,7 @@ func RandomOverFile(filename string) error {
 	remainder := fi.Size() % N
 	if remainder > 0 {
 		bb := make([]byte, remainder)
-		mathrandhelper.RandomBuf(bb)
+		_, _ = cryptorand.Read(bb)
 		if _, err := f.Write(bb); err != nil {
 			return err
 		}

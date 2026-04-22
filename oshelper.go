@@ -44,9 +44,12 @@ var ErrStdinNotRedirected = errors.New("standard input is not redirected (file '
 //
 // [stdin]: https://pkg.go.dev/os#pkg-variables
 func StdinRedirected() error {
-	finfo, _ := os.Stdin.Stat()
-	fmode := finfo.Mode()
-	if !(fmode.IsRegular() || (fmode&fs.ModeNamedPipe != 0)) {
+	stdinInfo, err := os.Stdin.Stat()
+	if err != nil {
+		return err
+	}
+	stdinMode := stdinInfo.Mode()
+	if !(stdinMode.IsRegular() || (stdinMode&fs.ModeNamedPipe != 0)) {
 		return ErrStdinNotRedirected
 	}
 	return nil
