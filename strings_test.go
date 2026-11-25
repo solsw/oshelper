@@ -3,10 +3,10 @@ package oshelper
 import (
 	"os"
 	"path/filepath"
+	"slices"
+	"strings"
 	"testing"
 )
-
-// added by Claude Code
 
 func TestReadFileStrings(t *testing.T) {
 	td := t.TempDir()
@@ -109,5 +109,17 @@ func TestWriteFileStrings(t *testing.T) {
 	want := "line1" + NewLine + "line2" + NewLine
 	if string(got) != want {
 		t.Errorf("WriteFileStrings() file = %q, want %q", got, want)
+	}
+}
+
+func TestReadFileStringsLongLine(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "lines")
+	want := []string{"", strings.Repeat("x", 100_000), "last"}
+	if err := WriteFileStrings(path, want, 0600); err != nil {
+		t.Fatal(err)
+	}
+	got, err := ReadFileStrings(path)
+	if err != nil || !slices.Equal(got, want) {
+		t.Errorf("ReadFileStrings returned %d lines, %v; want original lines", len(got), err)
 	}
 }

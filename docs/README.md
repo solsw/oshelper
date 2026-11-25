@@ -55,7 +55,8 @@ in that error (e.g. `f` may shorten an excessively long `dirname`).
 func ClearDir(dirname string) error
 ```
 
-Removes the contents of the directory `dirname`, leaving the directory itself in place.
+Opens `dirname` once, then lists and recursively removes its entries through
+the same directory handle. The directory itself stays in place.
 
 ### RandomOverFile
 
@@ -123,10 +124,15 @@ func Freadln(r io.Reader) (string, error)
 func Readln() (string, error)
 ```
 
-`Freadln` reads from `r` until the first end-of-line marker (see
-[bufio.ScanLines](https://pkg.go.dev/bufio#ScanLines)) and returns the line
-stripped of any trailing end-of-line marker. Returns `io.EOF` if `r` is at EOF
-before any data is read. `Readln` is like `Freadln`, but reads from standard input.
+`Freadln` reads one line per call and strips the LF or CRLF ending. It returns
+a final unterminated line with a nil error, stripping a trailing carriage
+return if present. A blank line returns `("", nil)`. A call at end of input
+returns `("", io.EOF)`.
+
+Successive calls on the same reader preserve the remaining lines, including
+lines longer than 64 KiB. For efficient reads in a loop, create a
+`*bufio.Reader` once and pass it to every call. `Readln` reads one line at a
+time from standard input with the same line-ending and EOF behavior.
 
 ### ReadFileStrings
 
@@ -134,7 +140,9 @@ before any data is read. `Readln` is like `Freadln`, but reads from standard inp
 func ReadFileStrings(filename string) ([]string, error)
 ```
 
-Returns the contents of the file `filename` as a `[]string`, one element per line.
+Returns one string per line using the same line-ending rules as `Freadln`.
+It handles lines longer than 64 KiB and includes a final unterminated line.
+An empty file returns a nil slice and a nil error.
 
 ### WriteFileStrings, WriteFileStringsNewLine
 
@@ -158,10 +166,11 @@ func (sfw *SyncFileWriter) File() *os.File
 func (sfw *SyncFileWriter) Write(p []byte) (n int, err error)
 ```
 
-An [os.File](https://pkg.go.dev/os#File)-based
-[io.Writer](https://pkg.go.dev/io#Writer) implementation that calls
-[os.File.Sync](https://pkg.go.dev/os#File.Sync) after each write, so every
-write is committed to stable storage. `File` returns the underlying file.
+`SyncFileWriter` implements `io.Writer` by writing to the underlying file and
+calling `Sync` after each successful write. If the write succeeds and `Sync`
+fails, `Write` returns the byte count from the write together with the sync
+error. In that case the file accepted those bytes, but their durability is
+uncertain. `File` returns the underlying `*os.File`.
 
 ## Standard input
 

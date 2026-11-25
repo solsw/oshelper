@@ -2,6 +2,7 @@ package oshelper
 
 import (
 	"bufio"
+	"io"
 	"os"
 	"strings"
 )
@@ -14,11 +15,20 @@ func ReadFileStrings(filename string) ([]string, error) {
 	}
 	defer f.Close()
 	var ss []string
-	sc := bufio.NewScanner(f)
-	for sc.Scan() {
-		ss = append(ss, sc.Text())
+	br := bufio.NewReader(f)
+	for {
+		line, err := Freadln(br)
+		if err == io.EOF {
+			return ss, nil
+		}
+		if err != nil {
+			if line != "" {
+				ss = append(ss, line)
+			}
+			return ss, err
+		}
+		ss = append(ss, line)
 	}
-	return ss, sc.Err()
 }
 
 // WriteFileStringsNewLine writes 'ss' to the named file.

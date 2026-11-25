@@ -3,6 +3,7 @@ package oshelper
 import (
 	"os"
 	"path/filepath"
+	"runtime"
 	"testing"
 )
 
@@ -110,31 +111,85 @@ func TestWipeFile(t *testing.T) {
 	}
 }
 
-func TestClearDir(t *testing.T) {
-	const dir1 = "dir1"
-	const dir2 = "dir2"
-	_ = os.Mkdir(dir1, os.ModePerm)
-	defer os.Remove(dir1)
-	_ = os.WriteFile(filepath.Join(dir1, "file1"), []byte("qwerty"), os.ModePerm)
-	_ = os.Mkdir(filepath.Join(dir1, dir2), os.ModePerm)
-	_ = os.WriteFile(filepath.Join(dir1, dir2, "file2"), []byte("qwerty"), os.ModePerm)
+func TestWipeFileRejectsSymlink(t *testing.T) {
+	dir := t.TempDir()
+	target := filepath.Join(dir, "target")
+	link := filepath.Join(dir, "link")
+	const contents = "keep this file"
+	if err := os.WriteFile(target, []byte(contents), 0600); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Symlink(target, link); err != nil {
+		t.Skipf("cannot create symlink: %v", err)
+	}
 
-	type args struct {
-		dirname string
+	if err := WipeFile(link); err == nil {
+		t.Error("WipeFile accepted a symlink")
 	}
-	tests := []struct {
-		name    string
-		args    args
-		wantErr bool
-	}{
-		{name: "1", args: args{dirname: dir1}, wantErr: false},
+	if _, err := os.Readlink(link); err != nil {
+		t.Errorf("symlink was not preserved: %v", err)
 	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if err := ClearDir(tt.args.dirname); (err != nil) != tt.wantErr {
-				t.Errorf("ClearDir() error = %v, wantErr %v", err, tt.wantErr)
-			}
-		})
+	got, err := os.ReadFile(target)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if string(got) != contents {
+		t.Error("WipeFile modified the symlink target")
+	}
+}
+
+func TestClearDir(t *testing.T) {
+	dir := t.TempDir()
+	subdir := filepath.Join(dir, "subdir")
+	if err := os.Mkdir(subdir, 0700); err != nil {
+		t.Fatal(err)
+	}
+	for _, parent := range []string{dir, subdir} {
+		if err := os.WriteFile(filepath.Join(parent, "file"), nil, 0600); err != nil {
+			t.Fatal(err)
+		}
+	}
+	if err := ClearDir(dir); err != nil {
+		t.Fatal(err)
+	}
+	entries, err := os.ReadDir(dir)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(entries) != 0 {
+		t.Errorf("entries left after ClearDir: %v", entries)
+	}
+}
+
+func TestClearDirThroughSymlinkParent(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("Windows resolves .. before following directory symlinks")
+	}
+	base := t.TempDir()
+	child := filepath.Join(base, "real", "child")
+	work := filepath.Join(base, "real", "work")
+	for _, dir := range []string{child, work} {
+		if err := os.MkdirAll(dir, 0700); err != nil {
+			t.Fatal(err)
+		}
+	}
+	if err := os.WriteFile(filepath.Join(work, "file"), nil, 0600); err != nil {
+		t.Fatal(err)
+	}
+	link := filepath.Join(base, "link")
+	if err := os.Symlink(child, link); err != nil {
+		t.Skipf("cannot create symlink: %v", err)
+	}
+	// Keep .. in the input so the filesystem resolves it relative to child.
+	if err := ClearDir(link + "/../work"); err != nil {
+		t.Fatal(err)
+	}
+	entries, err := os.ReadDir(work)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(entries) != 0 {
+		t.Errorf("entries left in resolved directory: %v", entries)
 	}
 }
 

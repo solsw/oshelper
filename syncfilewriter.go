@@ -26,9 +26,5 @@ func (sfw *SyncFileWriter) Write(p []byte) (n int, err error) {
 	if err != nil {
 		return
 	}
-	err = sfw.file.Sync()
-	if err != nil {
-		n = 0 // suggested by Claude Code
-	}
-	return
+	return n, sfw.file.Sync()
 }

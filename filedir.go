@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"io/fs"
 	"os"
-	"path/filepath"
 )
 
 // FileExistsFunc reports whether a regular file 'filename' exists.
@@ -69,12 +68,17 @@ func DirExists(dirname string) (bool, error) {
 
 // ClearDir clears the contents of the directory 'dirname'.
 func ClearDir(dirname string) error {
-	des, err := os.ReadDir(dirname)
+	root, err := os.OpenRoot(dirname)
+	if err != nil {
+		return err
+	}
+	defer root.Close()
+	des, err := fs.ReadDir(root.FS(), ".")
 	if err != nil {
 		return err
 	}
 	for _, de := range des {
-		if err := os.RemoveAll(filepath.Join(dirname, de.Name())); err != nil {
+		if err := root.RemoveAll(de.Name()); err != nil {
 			return err
 		}
 	}
@@ -83,6 +87,10 @@ func ClearDir(dirname string) error {
 
 // RandomOverFile overwrites the contents of file 'filename' with random data.
 func RandomOverFile(filename string) error {
+	return randomOverFile(filename, nil)
+}
+
+func randomOverFile(filename string, expected fs.FileInfo) error {
 	f, err := os.OpenFile(filename, os.O_WRONLY, os.ModePerm)
 	if err != nil {
 		return err
@@ -91,6 +99,9 @@ func RandomOverFile(filename string) error {
 	fi, err := f.Stat()
 	if err != nil {
 		return err
+	}
+	if expected != nil && !os.SameFile(expected, fi) {
+		return fmt.Errorf("file changed before overwrite: %q", filename)
 	}
 	const N int64 = 1024 * 1024
 	quotient := fi.Size() / N
@@ -114,11 +125,26 @@ func RandomOverFile(filename string) error {
 	return f.Sync()
 }
 
-// WipeFile first overwrites the contents of file 'filename' with random data,
-// then removes the file.
+// WipeFile overwrites a regular file with random data, then removes it.
+// It rejects a symbolic link at the final path component.
+// The caller must keep the path stable until WipeFile returns.
 func WipeFile(filename string) error {
-	if err := RandomOverFile(filename); err != nil {
+	fi, err := os.Lstat(filename)
+	if err != nil {
 		return err
+	}
+	if !fi.Mode().IsRegular() {
+		return fmt.Errorf("not a regular file: %q", filename)
+	}
+	if err := randomOverFile(filename, fi); err != nil {
+		return err
+	}
+	current, err := os.Lstat(filename)
+	if err != nil {
+		return err
+	}
+	if !current.Mode().IsRegular() || !os.SameFile(fi, current) {
+		return fmt.Errorf("file changed before removal: %q", filename)
 	}
 	return os.Remove(filename)
 }

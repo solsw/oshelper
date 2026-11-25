@@ -52,3 +52,27 @@ func TestFreadln(t *testing.T) {
 		})
 	}
 }
+
+func TestFreadlnSuccessiveLines(t *testing.T) {
+	const input = "first\r\n\nlast\r"
+	for _, r := range []io.Reader{strings.NewReader(input), bufio.NewReader(strings.NewReader(input))} {
+		for _, want := range []string{"first", "", "last"} {
+			got, err := Freadln(r)
+			if got != want || err != nil {
+				t.Errorf("Freadln(%T) = %q, %v; want %q, nil", r, got, err, want)
+				break
+			}
+		}
+		if got, err := Freadln(r); got != "" || err != io.EOF {
+			t.Errorf("Freadln(%T) at EOF = %q, %v", r, got, err)
+		}
+	}
+}
+
+func TestFreadlnLongLine(t *testing.T) {
+	want := strings.Repeat("x", 100_000)
+	got, err := Freadln(strings.NewReader(want + "\n"))
+	if err != nil || got != want {
+		t.Errorf("Freadln returned %d bytes, %v; want %d bytes", len(got), err, len(want))
+	}
+}
